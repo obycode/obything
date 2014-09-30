@@ -16,7 +16,7 @@
 definition(
     name: "ObyThing Music Setup",
     namespace: "com.obycode",
-    author: "cbycode",
+    author: "obycode",
     description: "Use this app to setup ObyThing Music (http://obything.obycode.com) to control your music with SmartThings.",
     category: "SmartThings Labs",
     iconUrl: "http://obycode.com/obything/ObyThingSTLogo.png",
