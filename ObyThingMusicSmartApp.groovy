@@ -1,7 +1,7 @@
 /**
- *  ObyThing Music Setup
+ *  ObyThing Music SmartApp
  *
- *  Copyright 2014 ObyCode
+ *  Copyright 2014 obycode
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  *  in compliance with the License. You may obtain a copy of the License at:
@@ -14,18 +14,18 @@
  *
  */
 definition(
-    name: "ObyThing Music Setup",
+    name: "ObyThing Music SmartApp",
     namespace: "com.obycode",
     author: "obycode",
-    description: "Use this app to setup ObyThing Music (http://obything.obycode.com) to control your music with SmartThings.",
+    description: "Use this free SmartApp in conjunction with the ObyThing Music app for your Mac to control and automate music and more with iTunes and SmartThings.",
     category: "SmartThings Labs",
     iconUrl: "http://obycode.com/obything/ObyThingSTLogo.png",
     iconX2Url: "http://obycode.com/obything/ObyThingSTLogo@2x.png")
 
 
 preferences {
-    section("Setup my ObyThing with this IP:port (click the icon in the status bar to find this):") {
-        input "theAddr", "string", multiple: false, required: true
+    section("Get the IP address and port for your Mac computer using the ObyThing App (http://obything.obycode.com) and set up the SmartApp below:") {
+        input "theAddr", "string", title: "IP:port (click icon in status bar)", multiple: false, required: true
     }
     section("on this hub...") {
         input "theHub", "hub", multiple: false, required: true
