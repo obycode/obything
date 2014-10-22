@@ -22,12 +22,16 @@ metadata {
         capability "Refresh"
         capability "Switch"
         
-        command "playTrackAtVolume", ["string","number"]
-        command "playTrackAndResume", ["string","number","number"]
-        command "playTextAndResume", ["string","number"]
-        command "playTrackAndRestore", ["string","number","number"]
-        command "playTextAndRestore", ["string","number"]
-        command "playSoundAndTrack", ["string","number","json_object","number"]
+        command "playTrackAtVolume", ["json_object","number","json_object"]
+        command "playTrackOnSpeakers", ["json_object","json_object"]
+        command "playTrackAndResume", ["string","number","number","json_object"]
+        command "playTextAndResume", ["string","number","json_object"]
+        command "playTrackAndRestore", ["string","number","number","json_object"]
+        command "playTextAndRestore", ["string","number","json_object"]
+        command "playSoundAndTrack", ["string","number","json_object","number","json_object"]
+        command "chooseSpeakers", ["string"]
+
+        attribute "speakers", "string"
     }
 
     simulator {
@@ -111,7 +115,7 @@ def parse(String description) {
     if (map.headers && map.body) { //got device info response
         if (map.body) {
             def bodyString = new String(map.body.decodeBase64())
-            //log.debug "body = $bodyString"
+            log.debug "body = $bodyString"
             def slurper = new JsonSlurper()
             def result = slurper.parseText(bodyString)
             if (result.containsKey("volume")) {
@@ -142,6 +146,11 @@ def parse(String description) {
             if (result.containsKey("playlists")) {
                 result.playlists.each() {
                     sendEvent(name: "trackData", value: "{\"station\": \"${it}\"}")
+                }
+            }
+            if (result.containsKey("speakers")) {
+                result.speakers.each() {
+                    sendEvent(name: "speakers", value: it)
                 }
             }
         }
@@ -245,41 +254,78 @@ def restoreTrack() {
     // TODO: handle 'restoreTrack' command
 }
 
-def playTrackAtVolume(String uri, volume) {
-    log.trace "playTrackAtVolume($uri, $volume)"
-    sendCommand("playTrack&track=${uri}&volume=${volume}")
+def playTrackAtVolume(Map trackData, volume, speakers=null) {
+    log.trace "playTrackAtVolume(${trackData.station}, $volume, $speakers)"
+    def cmd = "playlist&playlist=${trackData.station}&volume=${volume}"
+    if (speakers) {
+        def speakerList = speakers.collect{ "\"$it\"" }.join(',')
+        cmd += "&speakers=${speakerList}"
+    }
+    sendCommand(cmd)
 }
 
-def playTrackAndResume(uri, duration, volume=null) {
-    log.debug "playTrackAndResume($uri, $duration, $volume)"
+def playTrackAtVolume(String uri, volume, speakers=null) {
+    log.trace "playTrackAtVolume($uri, $volume, $speakers)"
+    def cmd = "playTrack&track=$uri&volume=${volume}"
+    if (speakers) {
+        def speakerList = speakers.collect{ "\"$it\"" }.join(',')
+        cmd += "&speakers=${speakerList}"
+    }
+    sendCommand(cmd)
+}
+
+def playTrackOnSpeakers(Map trackData, speakers) {
+    log.trace "playTrackOnSpeakers(${trackData.station}, $speakers)"
+    def speakerList = speakers.collect{ "\"$it\"" }.join(',')
+    def cmd = "playlist&playlist=${trackData.station}&speakers=${speakerList}"
+    sendCommand(cmd)
+}
+
+def playTrackOnSpeakers(String uri, speakers, delay=0) {
+    log.trace "playTrackOnSpeakers($uri, $speakers)"
+    def speakerList = speakers.collect{ "\"$it\"" }.join(',')
+    def cmd = "playTrack&track=$uri&speakers=${speakerList}"
+    sendCommand(cmd)
+}
+
+def playTrackAndResume(uri, duration, volume=null, speakers=null) {
+    log.debug "playTrackAndResume($uri, $duration, $volume, $speakers)"
     def cmd = "playTrack&track=${uri}&resume"
     if (volume) {
         cmd += "&volume=${volume}"
     }
-    sendCommand(cmd)
-}
-
-def playTextAndResume(text, volume=null)
-{
-    log.debug "playTextAndResume($text, $volume)"
-    def sound = textToSpeech(text)
-    playTrackAndResume(sound.uri, (sound.duration as Integer) + 1, volume)
-}
-
-def playTrackAndRestore(uri, duration, volume=null) {
-    log.debug "playTrackAndResume($uri, $duration, $volume)"
-    def cmd = "playTrack&track=${uri}&restore"
-    if (volume) {
-        cmd += "&volume=${volume}"
+    if (speakers) {
+        def speakerList = speakers.collect{ "\"$it\"" }.join(',')
+        cmd += "&speakers=${speakerList}"
     }
     sendCommand(cmd)
 }
 
-def playTextAndRestore(text, volume=null)
+def playTextAndResume(text, volume=null, speakers=null)
 {
-    log.debug "playTextAndResume($text, $volume)"
+    log.debug "playTextAndResume($text, $volume, $speakers)"
     def sound = textToSpeech(text)
-    playTrackAndRestore(sound.uri, (sound.duration as Integer) + 1, volume)
+    playTrackAndResume(sound.uri, (sound.duration as Integer) + 1, volume, speakers)
+}
+
+def playTrackAndRestore(uri, duration, volume=null, speakers=null) {
+    log.debug "playTrackAndResume($uri, $duration, $volume, $speakers)"
+    def cmd = "playTrack&track=${uri}&restore"
+    if (volume) {
+        cmd += "&volume=${volume}"
+    }
+    if (speakers) {
+        def speakerList = speakers.collect{ "\"$it\"" }.join(',')
+        cmd += "&speakers=${speakerList}"
+    }
+    sendCommand(cmd)
+}
+
+def playTextAndRestore(text, volume=null, speakers=null)
+{
+    log.debug "playTextAndResume($text, $volume, $speakers)"
+    def sound = textToSpeech(text)
+    playTrackAndRestore(sound.uri, (sound.duration as Integer) + 1, volume, speakers)
 }
 
 def playURL(theURL) {
@@ -288,12 +334,23 @@ def playURL(theURL) {
 }
 
 
-def playSoundAndTrack(soundUri, duration, trackData, volume=null) {
-    log.debug "playSoundAndTrack($uri, $duration, $trackData, $volume)"
+def playSoundAndTrack(soundUri, duration, trackData, volume=null, speakers=null) {
+    log.debug "playSoundAndTrack($uri, $duration, $trackData, $volume, $speakers)"
     def cmd = "playTrack&track=${soundUri}&playlist=${trackData.station}"
     if (volume) {
         cmd += "&volume=${volume}"
     }
+    if (speakers) {
+        def speakerList = speakers.collect{ "\"$it\"" }.join(',')
+        cmd += "&speakers=${speakerList}"
+    }
+    sendCommand(cmd)
+}
+
+def chooseSpeakers(chosenSpeakers) {
+    def slurper = new JsonSlurper()
+    def result = slurper.parseText(chosenSpeakers)
+    def cmd = "speakers=$speakers"
     sendCommand(cmd)
 }
 
@@ -332,6 +389,26 @@ private sendCommand(command) {
     
     result
 }
+
+private sendRequest(command) {
+    def path = "/get.html?" + command
+    
+    def headers = [:] 
+    headers.put("HOST", getHostAddress())
+    headers.put("Content-Type", "application/x-www-form-urlencoded")
+
+    def method = "GET"
+    
+    def result = new physicalgraph.device.HubAction(
+        method: method,
+        path: path,
+        headers: headers
+    )
+    
+    result
+}
+
+
 
 private getPlaylists() {
     log.debug "in getPlaylists!!!"
