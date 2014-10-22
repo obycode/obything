@@ -67,6 +67,7 @@ def mainPage() {
         section{
             input "actionType", "enum", title: "Action?", required: true, defaultValue: "Custom Message", options: [
                 "Custom Message",
+                "Custom URL",
                 "Bell 1",
                 "Bell 2",
                 "Dogs Barking",
@@ -80,6 +81,7 @@ def mainPage() {
                 "Piano",
                 "Lightsaber"]
             input "message","text",title:"Play this message", required:false, multiple: false
+            input "url","text",title:"Play a sound at this URL", required:false, multiple: false
         }
         section {
             input "sonos", "capability.musicPlayer", title: "On this music player", required: true
@@ -421,7 +423,7 @@ private loadText() {
         case "Lightsaber":
             state.sound = [uri: "http://s3.amazonaws.com/smartapp-media/sonos/lightsaber.mp3", duration: "10"]
             break;
-        default:
+        case "Custom Message":
             if (message) {
                 state.sound = textToSpeech(message instanceof List ? message[0] : message) // not sure why this is (sometimes) needed)
             }
@@ -429,7 +431,17 @@ private loadText() {
                 state.sound = textToSpeech("You selected the custom message option but did not enter a message in the $app.label Smart App")
             }
             break;
+        case "Custom URL":
+            if (url) {
+                state.sound = [uri: url, duration: "0"]
+            }
+            else {
+                state.sound = textToSpeech("You selected the custom URL option but did not enter a URL in the $app.label Smart App")
+            }
+            break;
+        default:
+            log.debug "Invalid selection."
+            break;
     }
 }
-
 
