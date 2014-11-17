@@ -199,7 +199,7 @@ private takeAction(evt) {
             sonos.play()
             break
         case "Stop Playing":
-            sonos.stop()
+            sonos.pause()
             break
         case "Toggle Play/Pause":
             def currentStatus = sonos.currentValue("status")
