@@ -258,11 +258,6 @@ def appTouchHandler(evt) {
 
 private takeAction(evt) {
     log.info "Playing '$state.selectedSong"
-    def speakerList = new ArrayList<String>(); 
-    int len = speakers.length();
-    for (int i=0;i<len;i++){ 
-      speakerList.add(speakers.get(i).toString());
-    }  
 
     if (volume) {
         sonos.playTrackAtVolume(state.selectedSong, volume, speakers)
