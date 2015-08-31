@@ -1,7 +1,7 @@
 /**
- *  ObyThing Music SmartApp
+ *  ObyThing Music Manager
  *
- *  Copyright 2014 obycode
+ *  Copyright 2015 obycode
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  *  in compliance with the License. You may obtain a copy of the License at:
@@ -14,7 +14,7 @@
  *
  */
 definition(
-    name: "ObyThing Music SmartApp",
+    name: "ObyThing Music Manager",
     namespace: "com.obycode",
     author: "obycode",
     description: "Use this free SmartApp in conjunction with the ObyThing Music app for your Mac to control and automate music and more with iTunes and SmartThings.",
@@ -42,10 +42,10 @@ def installed() {
 def updated() {
     /*
     log.debug "Updated ${app.label} with address '${settings.theAddr}' on hub '${settings.theHub.name}'"
-    
+
     def current = getChildDevices()
     log.debug "children: $current"
-    
+
     if (app.label != current.label) {
         log.debug "CHANGING name from ${current.label} to ${app.label}"
         log.debug "label props: ${current.label.getProperties()}"
@@ -60,11 +60,11 @@ def initialize() {
     def porthex = convertPortToHex(parts[1])
     def dni = "$iphex:$porthex"
     def hubNames = location.hubs*.name.findAll { it }
-    def d = addChildDevice("com.obycode", "ObyThing Music", dni, theHub.id, [label:"${app.label}", name:"ObyThing"])
+    def d = addChildDevice("com.obycode", "ObyThing Music", dni, theHub.id, [label:"${app.label}", name:"ObyThing", completedSetup: true])
     log.trace "created ObyThing '${d.displayName}' with id $dni"
 }
 
-private String convertIPtoHex(ipAddress) { 
+private String convertIPtoHex(ipAddress) {
     String hex = ipAddress.tokenize( '.' ).collect {  String.format( '%02X', it.toInteger() ) }.join()
     return hex
 
