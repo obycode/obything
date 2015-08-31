@@ -24,7 +24,7 @@ definition(
 
 
 preferences {
-    section("Get the IP address and port for your Mac computer using the ObyThing App (http://obything.obycode.com) and set up the SmartApp below:") {
+    section("Get the IP address and port for your Mac computer using the ObyThing Music App (http://obything.obycode.com) and set up the SmartApp below:") {
         input "theAddr", "string", title: "IP:port (click icon in status bar)", multiple: false, required: true
     }
     section("on this hub...") {

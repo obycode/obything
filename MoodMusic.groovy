@@ -9,7 +9,7 @@ import groovy.json.JsonSlurper
 
 definition(
   name: "ObyThing Mood Music",
-  namespace: "obycode",
+  namespace: "com.obycode",
   author: "obycode, based on Mood Music by SmartThings",
   description: "Plays a selected playlist on your Mac with ObyThing",
   category: "SmartThings Labs",
