@@ -246,7 +246,7 @@ def appTouchHandler(evt) {
 private takeAction(evt) {
   log.trace "takeAction()"
 
-  def speakerString
+  def speakerString = ""
   if (speakers) {
     speakerString = ""
     speakers.each {
